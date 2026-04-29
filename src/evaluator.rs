@@ -88,6 +88,9 @@ impl<'src, 'run> Evaluator<'src, 'run> {
         Setting::DotenvRequired(value) => {
           settings.dotenv_required = value;
         }
+        Setting::DotenvScript(value) => {
+          settings.dotenv_script = Some(self.evaluate_expression(&value)?);
+        }
         Setting::Export(value) => {
           settings.export = value;
         }

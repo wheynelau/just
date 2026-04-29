@@ -14,6 +14,7 @@ pub(crate) struct Settings {
   pub(crate) dotenv_override: bool,
   pub(crate) dotenv_path: Option<PathBuf>,
   pub(crate) dotenv_required: bool,
+  pub(crate) dotenv_script: Option<String>,
   pub(crate) export: bool,
   pub(crate) fallback: bool,
   pub(crate) guards: bool,

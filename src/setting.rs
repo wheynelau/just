@@ -9,6 +9,7 @@ pub(crate) enum Setting<'src> {
   DotenvOverride(bool),
   DotenvPath(Expression<'src>),
   DotenvRequired(bool),
+  DotenvScript(Expression<'src>),
   Export(bool),
   Fallback(bool),
   Guards(bool),
@@ -49,6 +50,7 @@ impl<'src> Setting<'src> {
       Self::DotenvFilename(_value)
       | Self::DotenvPath(_value)
       | Self::Tempdir(_value)
+      | Self::DotenvScript(_value)
       | Self::WorkingDirectory(_value) => false,
       Self::ScriptInterpreter(_value) | Self::Shell(_value) | Self::WindowsShell(_value) => false,
     }
@@ -58,6 +60,7 @@ impl<'src> Setting<'src> {
     let first = match self {
       Self::DotenvFilename(value)
       | Self::DotenvPath(value)
+      | Self::DotenvScript(value)
       | Self::Tempdir(value)
       | Self::WorkingDirectory(value) => Some(value),
       Self::ScriptInterpreter(value) | Self::Shell(value) | Self::WindowsShell(value) => {
@@ -98,6 +101,7 @@ impl Display for Setting<'_> {
       | Self::WindowsPowerShell(value) => write!(f, "{value}"),
       Self::DotenvFilename(value)
       | Self::DotenvPath(value)
+      | Self::DotenvScript(value)
       | Self::Tempdir(value)
       | Self::WorkingDirectory(value) => {
         write!(f, "{value}")

@@ -80,6 +80,12 @@ pub(crate) enum Error<'src> {
     path: PathBuf,
   },
   DotenvRequired,
+  DotenvScriptExec {
+    script: String,
+    exit_status: ExitStatus,
+    stderr: String,
+  },
+  DotenvScriptOutput(OutputError),
   DumpJson {
     source: serde_json::Error,
   },
@@ -565,6 +571,22 @@ impl ColorDisplay for Error<'_> {
       DotenvRequired => {
         write!(f, "dotenv file not found")?;
       }
+      DotenvScriptExec {
+        script,
+        exit_status,
+        stderr,
+      } => {
+        write!(f, "dotenv-script `{script}` failed: {exit_status}")?;
+        if !stderr.is_empty() {
+          write!(f, "\n{stderr}")?;
+        }
+      }
+      DotenvScriptOutput(output_error) => match output_error {
+        OutputError::Utf8(utf8_error) => {
+          write!(f, "dotenv-script stdout was not valid utf8: {utf8_error}",)?;
+        }
+        _ => unreachable!(),
+      },
       DumpJson { source } => {
         write!(f, "failed to dump JSON to stdout: {source}")?;
       }

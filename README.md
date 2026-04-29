@@ -1044,6 +1044,7 @@ foo:
 | `dotenv-override` | boolean | `false` | Override existing environment variables with values from the `.env` file. |
 | `dotenv-path` | string | - | Load a `.env` file from a custom path and error if not present. Overrides `dotenv-filename`. |
 | `dotenv-required` | boolean | `false` | Error if a `.env` file isn't found. |
+| `dotenv-script` | string | - | Run a command and parse its stdout as dotenv KEY=VALUE pairs. |
 | `export` | boolean | `false` | Export all variables as environment variables. |
 | `fallback` | boolean | `false` | Search `justfile` in parent directory if the first recipe on the command line is not found. |
 | `ignore-comments` | boolean | `false` | Ignore recipe lines beginning with `#`. |
@@ -1152,6 +1153,10 @@ must be accessed using `$VARIABLE_NAME` in recipes and backticks.
 
 If `dotenv-override` is set, variables from the environment file will override
 existing environment variables.
+
+If `dotenv-script` is set, `just` will run the given command or script using the
+configured shell and parse its stdout as dotenv KEY=VALUE pairs. This overrides all
+file-based dotenv settings. If the command exits with a non-zero status, `just` will error.
 
 For example, if your `.env` file contains:
 
