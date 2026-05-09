@@ -104,6 +104,8 @@ impl Config {
   }
 
   fn search_config(arguments: &Arguments, positional: &Positional) -> ConfigResult<SearchConfig> {
+    const STANDARD_INPUT_ARGUMENT: &str = "-";
+
     if arguments.global_justfile {
       return Ok(SearchConfig::GlobalJustfile);
     }
@@ -120,12 +122,17 @@ impl Config {
     } else {
       match (justfile, working_directory) {
         (None, None) => Ok(SearchConfig::FromInvocationDirectory),
-        (Some(justfile), None) => Ok(SearchConfig::WithJustfile { justfile }),
-        (Some(justfile), Some(working_directory)) => {
-          Ok(SearchConfig::WithJustfileAndWorkingDirectory {
-            justfile,
-            working_directory,
-          })
+        (Some(justfile), working_directory) => {
+          if justfile == Path::new(STANDARD_INPUT_ARGUMENT) {
+            Ok(SearchConfig::FromStandardInput { working_directory })
+          } else if let Some(working_directory) = working_directory {
+            Ok(SearchConfig::WithJustfileAndWorkingDirectory {
+              justfile,
+              working_directory,
+            })
+          } else {
+            Ok(SearchConfig::WithJustfile { justfile })
+          }
         }
         (None, Some(_)) => Err(ConfigError::internal(
           "--working-directory set without --justfile",
@@ -240,7 +247,7 @@ impl Config {
       );
     }
 
-    let positional = Positional::from_values(Some(arguments.arguments.iter().map(String::as_str)));
+    let positional = Positional::from_values(arguments.arguments.iter().map(String::as_str));
 
     for (path, value) in &positional.overrides {
       overrides.insert(Self::parse_override(path)?, value.into());
@@ -1037,6 +1044,26 @@ mod tests {
     args: ["-f", "foo"],
     search_config: SearchConfig::WithJustfile {
       justfile: PathBuf::from("foo"),
+    },
+  }
+
+  test! {
+    name: search_config_justfile_stdin_long,
+    args: ["--justfile", "-"],
+    search_config: SearchConfig::FromStandardInput { working_directory: None },
+  }
+
+  test! {
+    name: search_config_justfile_stdin_short,
+    args: ["-f", "-"],
+    search_config: SearchConfig::FromStandardInput { working_directory: None },
+  }
+
+  test! {
+    name: search_config_justfile_stdin_with_working_directory,
+    args: ["--justfile", "-", "--working-directory", "foo"],
+    search_config: SearchConfig::FromStandardInput {
+      working_directory: Some(PathBuf::from("foo")),
     },
   }
 
